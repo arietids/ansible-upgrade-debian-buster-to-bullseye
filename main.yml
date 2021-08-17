@@ -39,6 +39,7 @@
         - name: Reboot
           reboot:
           when: ansible_connection != "local"
+
       tags:
         - never
         - step1
@@ -85,6 +86,10 @@
         - name: Apt full upgrade
           apt:
             upgrade: full
+
+        - name: Reboot
+          reboot:
+          when: ansible_connection != "local"
 
       tags:
         - never
