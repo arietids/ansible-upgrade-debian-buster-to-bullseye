@@ -1,0 +1,84 @@
+---
+- name: Upgrade Debian Buster to Bullseye
+  hosts: all
+  become: true
+
+  tasks:
+    - block:
+        - name: Get Debian version
+          slurp:
+            src: /etc/debian_version
+          register: debian_version
+
+        - name: Set fact
+          set_fact:
+            debian_version_val: "{{ debian_version['content'] | b64decode | trim }}"
+
+        - name: Ensure Debian version is 10.10
+          fail:
+            msg: "Debian version is not 10.10 but {{ debian_version_val }}"
+          when: debian_version_val != "10.10"
+      tags: always
+
+    - block:
+        - name: Apt update and upgrade
+          apt:
+            update_cache: true
+            upgrade: 'yes'
+
+        - name: Apt full-upgrade
+          apt:
+            upgrade: full
+
+        - name: Apt --purge autoremove
+          apt:
+            autoremove: true
+            purge: true
+
+        - name: Reboot
+          reboot:
+      tags: step1
+
+    - block:
+        - name: Update bullseye-security /etc/apt/sources.list file
+          replace:
+            path: /etc/apt/sources.list
+            regexp: " buster/updates "
+            replace: " bullseye-security "
+            backup: true
+
+        - name: Update bullseye /etc/apt/sources.list file
+          replace:
+            path: /etc/apt/sources.list
+            regexp: "buster"
+            replace: "bullseye"
+            backup: true
+
+        - name: Find all of the files inside /etc/apt/sources.list.d/ directory
+          find:
+            paths: "/etc/apt/sources.list.d/"
+            patterns: "*.list"
+          register: sources_list
+
+        - name: Update /etc/apt/sources.list.d/ files
+          replace:
+            path: "{{ item.path }}"
+            regexp: buster
+            replace: bullseye
+            backup: true
+          with_items: "{{ sources_list.files }}"
+
+        - name: Apt update
+          apt:
+            update_cache: true
+
+        - name: Apt upgrade
+          apt:
+            upgrade: 'yes'
+            only_upgrade: true
+
+        - name: Apt full upgrade
+          apt:
+            upgrade: full
+
+      tags: step2

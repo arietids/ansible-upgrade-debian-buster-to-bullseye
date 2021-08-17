@@ -1,0 +1,8 @@
+exclude_paths:
+- secrets/  # implicit unless exclude_paths is defined in config
+- .github/
+
+skip_list:
+  - "var-naming"
+  - "deprecated-local-action"
+  - "yaml"
