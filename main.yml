@@ -20,7 +20,8 @@
           when: debian_version_val != "10.10"
       tags: always
 
-    - block:
+    - name: Step 1
+      block:
         - name: Apt update and upgrade
           apt:
             update_cache: true
@@ -37,9 +38,13 @@
 
         - name: Reboot
           reboot:
-      tags: step1
+          when: ansible_connection != "local"
+      tags:
+        - never
+        - step1
 
-    - block:
+    - name: Step 2
+      block:
         - name: Update bullseye-security /etc/apt/sources.list file
           replace:
             path: /etc/apt/sources.list
@@ -81,4 +86,6 @@
           apt:
             upgrade: full
 
-      tags: step2
+      tags:
+        - never
+        - step2
