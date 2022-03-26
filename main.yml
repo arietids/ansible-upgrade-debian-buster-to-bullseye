@@ -14,10 +14,10 @@
           set_fact:
             debian_version_val: "{{ debian_version['content'] | b64decode | trim }}"
 
-        - name: Ensure Debian version is 10.10
+        - name: Ensure Debian version is 10.11
           fail:
-            msg: "Debian version is not 10.10 but {{ debian_version_val }}"
-          when: debian_version_val != "10.10"
+            msg: "Debian version is not 10.11 but {{ debian_version_val }}"
+          when: debian_version_val != "10.11"
       tags: always
 
     - name: Step 1
